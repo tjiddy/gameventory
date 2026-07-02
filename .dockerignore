@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs (we rebuild in Docker)
+dist/
+build/
+
+# Development files
+.git/
+.gitignore
+.idea/
+.vscode/
+*.md
+!README.md
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Testing
+coverage/
+e2e/
+
+# Database files (we use mounted volumes)
+*.db
+*.db-journal
+config/
+data/
+
+# Reference clones — huge, never part of the build context
+frontend/
+backend/
+nextjs-2024/
+docs/
+
+# OS files
+.DS_Store
+Thumbs.db

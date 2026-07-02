@@ -1,0 +1,123 @@
+name: Build & Push Docker Image
+run-name: Docker build for ${{ github.ref_name }}
+
+# Build/publish only — no deploy (deploy is the homelab-stacks Portainer flow):
+#   - push to `develop`          → ghcr.io/tjiddy/gameventory:develop
+#   - semver tag `vX.Y.Z` on main → :latest + :X.Y.Z + :X.Y, plus a GitHub Release
+on:
+  push:
+    branches: [develop]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v5
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Test
+        run: pnpm test
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Build
+        run: pnpm build
+
+  docker:
+    needs: [quality-gates]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # create GitHub Release on the semver-tag path
+      packages: write # push images to GHCR
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Compute build vars
+        id: vars
+        run: |
+          echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "git_tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            echo "git_tag=develop-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Docker metadata (tag matrix)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=develop,enable=${{ github.ref_type != 'tag' }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image (amd64)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            GIT_COMMIT=${{ github.sha }}
+            GIT_TAG=${{ steps.vars.outputs.git_tag }}
+            BUILD_TIME=${{ steps.vars.outputs.build_time }}
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name smoke-test \
+            -e DATABASE_URL=file:/data/gameventory.db \
+            -p 3199:3000 \
+            ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3199/api/health > /dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          HTTP_STATUS=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:3199/api/health || true)
+          NODE_VERSION=$(docker exec smoke-test node --version || echo "unknown")
+          docker stop smoke-test > /dev/null 2>&1 || true
+          docker rm smoke-test > /dev/null 2>&1 || true
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "::error::Smoke test failed — /api/health returned $HTTP_STATUS"
+            exit 1
+          fi
+          if ! echo "$NODE_VERSION" | grep -q '^v24\.'; then
+            echo "::error::Node version mismatch — expected v24.*, got $NODE_VERSION"
+            exit 1
+          fi
+          echo "Smoke test passed (HTTP $HTTP_STATUS, Node $NODE_VERSION)"
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

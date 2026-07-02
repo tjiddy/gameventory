@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude auto-memory (belongs in ~/.claude/projects/, not repo)
+memory/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+
+# Playwright E2E
+e2e/test-results/
+e2e/playwright-report/
+e2e/.auth/
+
+# Database
+*.db
+*.db-journal
+
+# Local config / data dir
+config/
+data/
+
+# Temp files
+tmp/
+temp/
+
+# --- Reference clones (on-disk oracle; each is its own git repo — never nest-commit) ---
+frontend/
+backend/
+nextjs-2024/
+
+# --- /review:plan working artifacts (never commit) ---
+PLAN-REVIEW.md
+PLAN-SEED.md
+PLAN-COMPARISON.md
+.plan-review/
+
+# Local secrets for dev (mounted from files in prod)
+secrets/

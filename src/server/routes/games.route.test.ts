@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { makeTestDb } from '../test-support/db.js';
-import { makeThing, makeFakeBgg, silentLogger } from '../test-support/fakes.js';
+import { makeThing, makeFakeBgg, silentLogger, TEST_ADMIN } from '../test-support/fakes.js';
 import { buildTestApp } from '../test-support/app.js';
 import { createServices } from '../services/di.js';
 
 async function adminApp(things: Record<number, ReturnType<typeof makeThing>>) {
   const db = await makeTestDb();
   const services = createServices(db, silentLogger, makeFakeBgg({ things, tagline: 'tag' }));
-  return buildTestApp(services, db, { isAdmin: () => true });
+  return buildTestApp(services, db, { user: TEST_ADMIN });
 }
 
 describe('games routes (admin session)', () => {

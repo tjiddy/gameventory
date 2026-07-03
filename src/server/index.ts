@@ -22,7 +22,7 @@ import {
 import { createDb, runMigrations } from '../db/index.js';
 import { config } from './config.js';
 import { errorHandlerPlugin } from './plugins/error-handler.js';
-import { authPlugin } from './plugins/auth.js';
+import { authPlugin, makeResolveUser } from './plugins/auth.js';
 import { createServices } from './services/di.js';
 import { startRefreshCron } from './jobs/refresh.js';
 import { registerRoutes } from './routes/index.js';
@@ -74,7 +74,9 @@ async function main() {
   const services = createServices(db, app.log);
 
   await app.register(errorHandlerPlugin);
-  await app.register(authPlugin);
+  await app.register(authPlugin, {
+    resolveUser: makeResolveUser({ config, users: services.users, sessionSecret: config.sessionSecret }),
+  });
   await registerRoutes(app, services, db);
 
   // Serve the built SPA whenever a build exists (self-guards on dist/client).

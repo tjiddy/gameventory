@@ -20,3 +20,4 @@ export const unauthorized = (message = 'Authentication required', code = 'UNAUTH
 export const forbidden = (message = 'Forbidden', code = 'FORBIDDEN'): HttpError => new HttpError(403, code, message);
 export const notFound = (message = 'Not found', code = 'NOT_FOUND'): HttpError => new HttpError(404, code, message);
 export const conflict = (message: string, code = 'CONFLICT'): HttpError => new HttpError(409, code, message);
+export const badGateway = (message: string, code = 'BAD_GATEWAY'): HttpError => new HttpError(502, code, message);

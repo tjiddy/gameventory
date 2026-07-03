@@ -1,5 +1,9 @@
 import type { FastifyBaseLogger } from 'fastify';
 import type { BggThing, BggPort, BggThingsResult, BggSearchResult } from '../../core/bgg/index.js';
+import type { AuthUser } from '../services/user.service.js';
+
+/** A stand-in admin user for route tests that need an authenticated session. */
+export const TEST_ADMIN: AuthUser = { id: 1, subject: 'admin-subject', displayName: 'Admin' };
 
 const noop = (): void => {};
 

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { Db } from '../../db/index.js';
 import type { Services } from '../services/di.js';
+import { config } from '../config.js';
 import { healthRoutes } from './health.js';
 import { gamesRoutes } from './games.js';
 import { refreshRoutes } from './refresh.js';
@@ -13,5 +14,11 @@ export async function registerRoutes(app: FastifyInstance, services: Services, d
   await gamesRoutes(app, services.games, services.refresh);
   await refreshRoutes(app, services.refresh);
   await bggRoutes(app, services.search);
-  await authRoutes(app);
+  await authRoutes(app, {
+    oidc: services.oidc,
+    users: services.users,
+    config,
+    sessionSecret: config.sessionSecret,
+    bootstrapAdmin: config.bootstrapAdmin,
+  });
 }

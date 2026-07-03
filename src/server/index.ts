@@ -22,6 +22,9 @@ import {
 import { createDb, runMigrations } from '../db/index.js';
 import { config } from './config.js';
 import { errorHandlerPlugin } from './plugins/error-handler.js';
+import { authPlugin } from './plugins/auth.js';
+import { createServices } from './services/di.js';
+import { startRefreshCron } from './jobs/refresh.js';
 import { registerRoutes } from './routes/index.js';
 import { registerStaticAndSpa, listenWithRetry } from './server-utils.js';
 
@@ -68,16 +71,22 @@ async function main() {
   app.log.info({ dbPath: config.dbPath }, 'Running migrations');
   await runMigrations(config.dbPath);
   const db = createDb(config.dbPath);
+  const services = createServices(db, app.log);
 
   await app.register(errorHandlerPlugin);
-  await registerRoutes(app, db);
+  await app.register(authPlugin);
+  await registerRoutes(app, services, db);
 
   // Serve the built SPA in production (dev uses the Vite dev server).
   if (config.isProd) {
     await registerStaticAndSpa(app);
   }
 
+  // Weekly metadata refresh (also samples stat-history). Manual trigger is POST /api/refresh.
+  const refreshCron = startRefreshCron(services.refresh, config.refreshCron, app.log);
+
   const shutdown = async () => {
+    refreshCron.stop();
     await app.close();
     process.exit(0);
   };

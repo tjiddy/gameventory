@@ -81,4 +81,36 @@ describe('AdminPage interactions (admin session)', () => {
     await user.click(within(deleteDialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(deleteSpy).toHaveBeenCalledWith(row.filename));
   });
+
+  it('uploads a selected file, confirms, and restores that file’s JSON text', async () => {
+    vi.spyOn(backupsApi, 'list').mockResolvedValue([row]);
+    const uploadSpy = vi
+      .spyOn(backupsApi, 'restoreUpload')
+      .mockResolvedValue({ restored: { games: 2, expansionLinks: 1, statHistory: 0 }, warnings: [], safetyBackup: 's' });
+    const user = userEvent.setup();
+
+    renderAdmin({ displayName: 'Todd' });
+    await screen.findByText(row.filename);
+
+    // Select a backup file through the hidden file input (the "Restore from Backup"
+    // button just proxies a click to it).
+    const fileJson = JSON.stringify({
+      format: 'gameventory-backup',
+      version: 1,
+      createdAt: 'x',
+      counts: { games: 2, baseGames: 1, expansionLinks: 1, statHistory: 0 },
+      games: [],
+      expansionLinks: [],
+      statHistory: [],
+    });
+    const file = new File([fileJson], 'gameventory-backup-uploaded.json', { type: 'application/json' });
+    await user.upload(screen.getByLabelText('Restore backup file'), file);
+
+    // Confirm the upload restore dialog.
+    const uploadDialog = await screen.findByText(/restore from uploaded file/i);
+    await user.click(within(uploadDialog.closest('dialog') as HTMLElement).getByRole('button', { name: 'Restore' }));
+
+    // The mutation receives the exact JSON text read from the selected file.
+    await waitFor(() => expect(uploadSpy).toHaveBeenCalledWith(fileJson));
+  });
 });

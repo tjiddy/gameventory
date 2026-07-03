@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import os from 'os';
 import path from 'path';
@@ -123,6 +123,30 @@ describe('BackupService.create — snapshot + counts', () => {
     expect(parsed.counts.games).toBe(parsed.games.length);
     expect(parsed.counts.expansionLinks).toBe(parsed.expansionLinks.length);
     expect(parsed.counts.statHistory).toBe(parsed.statHistory.length);
+  });
+
+  it('passes ONE shared transaction handle to all three snapshot reads', async () => {
+    const { store, backups } = await makeHarness();
+    await seedLibrary(store);
+
+    // Spy (call-through) on the three snapshot reads and capture the tx arg each got.
+    const gamesSpy = vi.spyOn(store, 'listAllGames');
+    const linksSpy = vi.spyOn(store, 'listAllExpansionLinksByBgg');
+    const statsSpy = vi.spyOn(store, 'listAllStatHistoryByBgg');
+
+    await backups.create();
+
+    // Each read runs exactly once, and each receives a DEFINED tx handle — not the
+    // implicit `this.db` fallback. Removing the `db.transaction` wrapper in
+    // buildSnapshot() would call these with `undefined`, failing this assertion.
+    expect(gamesSpy).toHaveBeenCalledTimes(1);
+    expect(linksSpy).toHaveBeenCalledTimes(1);
+    expect(statsSpy).toHaveBeenCalledTimes(1);
+    const txHandles = [gamesSpy.mock.calls[0]?.[0], linksSpy.mock.calls[0]?.[0], statsSpy.mock.calls[0]?.[0]];
+    for (const tx of txHandles) expect(tx).toBeDefined();
+    // …and it is the SAME transaction object across all three reads (one snapshot).
+    expect(txHandles[1]).toBe(txHandles[0]);
+    expect(txHandles[2]).toBe(txHandles[0]);
   });
 });
 

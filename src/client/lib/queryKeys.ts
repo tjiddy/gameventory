@@ -3,4 +3,5 @@ export const queryKeys = {
   game: (bggId: number) => ['game', bggId] as const,
   refreshStatus: ['refresh', 'status'] as const,
   auth: ['auth', 'me'] as const,
+  backups: ['backups'] as const,
 };

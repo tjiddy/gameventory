@@ -19,6 +19,7 @@ function NavLinks({
     <>
       <Link to="/" className="hover:text-cyan-400">Library</Link>
       {isAdmin && <Link to="/add" className="hover:text-cyan-400">Add Game</Link>}
+      {isAdmin && <Link to="/admin" className="hover:text-cyan-400">Admin</Link>}
       {isAdmin && (
         <button type="button" onClick={onRefresh} className="hover:text-cyan-400" aria-label="Refresh all">
           ⟳ Refresh All

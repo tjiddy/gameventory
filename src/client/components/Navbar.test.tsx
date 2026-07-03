@@ -5,13 +5,13 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { queryKeys } from '../lib/queryKeys';
 import { Navbar } from './Navbar';
 
-function renderNavbar() {
+function renderNavbar(user: { displayName: string } | null = null) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   // Pre-seed the auth query so useAuth() resolves without firing a relative
-  // /api/auth/me fetch (anonymous fixture).
-  queryClient.setQueryData(queryKeys.auth, { user: null });
+  // /api/auth/me fetch (anonymous fixture by default).
+  queryClient.setQueryData(queryKeys.auth, { user });
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
@@ -46,5 +46,17 @@ describe('Navbar brand', () => {
     // Build the dice code point programmatically so the literal glyph never
     // lands under src/ (keeps the zero-grep invariant intact).
     expect(brandLink).not.toHaveTextContent(String.fromCodePoint(0x1f3b2));
+  });
+});
+
+describe('Navbar admin link (access-control gate)', () => {
+  it('is absent for an anonymous user', () => {
+    renderNavbar(null);
+    expect(screen.queryByRole('link', { name: /^Admin$/ })).toBeNull();
+  });
+
+  it('is visible for an admin', () => {
+    renderNavbar({ displayName: 'Todd' });
+    expect(screen.getByRole('link', { name: /^Admin$/ })).toHaveAttribute('href', '/admin');
   });
 });

@@ -7,6 +7,7 @@ import { gamesRoutes } from './games.js';
 import { refreshRoutes } from './refresh.js';
 import { bggRoutes } from './bgg.js';
 import { authRoutes } from './auth.js';
+import { adminRoutes } from './admin.js';
 
 /** Route registry — adding a route means one line here. */
 export async function registerRoutes(app: FastifyInstance, services: Services, db: Db): Promise<void> {
@@ -14,6 +15,7 @@ export async function registerRoutes(app: FastifyInstance, services: Services, d
   await gamesRoutes(app, services.games, services.refresh);
   await refreshRoutes(app, services.refresh);
   await bggRoutes(app, services.search);
+  await adminRoutes(app, services.backups);
   await authRoutes(app, {
     oidc: services.oidc,
     users: services.users,

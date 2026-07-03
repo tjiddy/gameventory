@@ -16,6 +16,9 @@ export const SESSION_COOKIE = 'gv_session';
  */
 export function requiresAdmin(method: string, path: string): boolean {
   if (!path.startsWith('/api/')) return false;
+  // Every /api/admin/* route (GET and non-GET) is admin-only. This branch MUST
+  // precede the GET branch below, or admin GET routes would fall through to public.
+  if (path.startsWith('/api/admin/')) return true;
   if (method === 'GET') return path === '/api/bgg/search';
   return true;
 }

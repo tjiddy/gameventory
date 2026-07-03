@@ -1,10 +1,40 @@
 @import "tailwindcss";
 
-/* Phase 0 baseline only. The full theme (cyan palette, Luckiest Guy / Poppins
-   self-hosted fonts, custom grid breakpoints from GameLibrary) lands in Phase 2. */
+/* Self-hosted brand fonts. Drop the woff2 binaries into src/client/public/fonts/;
+   until then these gracefully fall back to system fonts (visual-only, non-blocking). */
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins-400.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: 'Poppins';
+  src: url('/fonts/poppins-600.woff2') format('woff2');
+  font-weight: 600; font-display: swap;
+}
+@font-face {
+  font-family: 'Luckiest Guy';
+  src: url('/fonts/luckiest-guy.woff2') format('woff2');
+  font-weight: 400; font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Poppins', system-ui, sans-serif;
+  --font-display: 'Luckiest Guy', system-ui, sans-serif;
+
+  /* Custom library-grid breakpoints carried over from the old GameLibrary
+     (MIGRATION-PLAN §3.1): the column count steps at these exact widths. */
+  --breakpoint-c2: 850px;
+  --breakpoint-c3: 1330px;
+  --breakpoint-c4: 1730px;
+  --breakpoint-c5: 2230px;
+  --breakpoint-c6: 2730px;
+  --breakpoint-c7: 3300px;
+  --breakpoint-c8: 3700px;
+}
+
 @layer base {
   body {
-    @apply bg-gray-900 text-gray-100 antialiased;
-    font-family: system-ui, sans-serif;
+    @apply bg-gray-900 text-gray-100 font-sans antialiased;
   }
 }

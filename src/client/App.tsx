@@ -1,27 +1,29 @@
-import { useQuery } from '@tanstack/react-query';
-import { fetchApi } from './lib/api/client';
+import { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { Navbar } from './components/Navbar';
+import { RefreshProgress } from './components/RefreshProgress';
+import { Spinner } from './components/Spinner';
 
-interface Health {
-  status: string;
-  version: string;
-}
+const LibraryPage = lazy(() => import('./pages/LibraryPage').then((m) => ({ default: m.LibraryPage })));
+const DetailsPage = lazy(() => import('./pages/DetailsPage').then((m) => ({ default: m.DetailsPage })));
+const AddPage = lazy(() => import('./pages/AddPage').then((m) => ({ default: m.AddPage })));
+const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 
-// Phase 0 shell. Proves the client → /api proxy → Fastify → DB path is live.
-// The real UI (library / details / add) lands in Phase 2.
 export function App() {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['health'],
-    queryFn: () => fetchApi<Health>('/api/health'),
-  });
-
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center gap-4 p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Gameventory</h1>
-      <p className="text-sm opacity-70">
-        {isLoading && 'Checking API…'}
-        {isError && 'API unreachable'}
-        {data && `API: ${data.status} · ${data.version}`}
-      </p>
-    </main>
+    <div className="min-h-screen">
+      <Navbar />
+      <RefreshProgress />
+      <Suspense fallback={<Spinner />}>
+        <Routes>
+          <Route path="/" element={<LibraryPage />} />
+          <Route path="/add" element={<AddPage />} />
+          <Route path="/details/:bggId" element={<DetailsPage />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </Suspense>
+      <Toaster theme="dark" position="bottom-right" richColors />
+    </div>
   );
 }

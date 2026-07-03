@@ -9,6 +9,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   root: 'src/client',
   base: '/',
+  define: {
+    __GIT_COMMIT__: JSON.stringify(process.env.GIT_COMMIT || 'dev'),
+  },
   resolve: {
     alias: {
       '@core': path.resolve(__dirname, './src/core'),

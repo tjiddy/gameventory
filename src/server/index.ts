@@ -77,10 +77,9 @@ async function main() {
   await app.register(authPlugin);
   await registerRoutes(app, services, db);
 
-  // Serve the built SPA in production (dev uses the Vite dev server).
-  if (config.isProd) {
-    await registerStaticAndSpa(app);
-  }
+  // Serve the built SPA whenever a build exists (self-guards on dist/client).
+  // Dev uses the Vite dev server, so there's usually no build to serve there.
+  await registerStaticAndSpa(app);
 
   // Weekly metadata refresh (also samples stat-history). Manual trigger is POST /api/refresh.
   const refreshCron = startRefreshCron(services.refresh, config.refreshCron, app.log);

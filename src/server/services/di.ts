@@ -20,7 +20,11 @@ export interface Services {
   oidc: OidcService | null;
 }
 
-export function createServices(db: Db, log: FastifyBaseLogger, bgg: BggPort = new BggAdapter()): Services {
+export function createServices(
+  db: Db,
+  log: FastifyBaseLogger,
+  bgg: BggPort = new BggAdapter({ token: config.bggApiToken }),
+): Services {
   const store = new GameStore(db);
   const refresh = new RefreshService(store, bgg, log);
   const games = new GameService(store, bgg, log, {

@@ -153,3 +153,20 @@ describe('BggAdapter.scrapeTagline', () => {
     await expect(makeAdapter().scrapeTagline(13)).resolves.toBeNull();
   });
 });
+
+describe('BggAdapter auth token', () => {
+  it('sends Authorization: Bearer when a token is set, omits it otherwise', async () => {
+    let authHeader: string | null = null;
+    server.use(http.get(THING_URL, ({ request }) => {
+      authHeader = request.headers.get('authorization');
+      return xml(THING_SINGLE);
+    }));
+
+    await makeAdapter({ token: 'secret-token' }).getThings([13]);
+    expect(authHeader).toBe('Bearer secret-token');
+
+    authHeader = null;
+    await makeAdapter().getThings([13]);
+    expect(authHeader).toBeNull();
+  });
+});

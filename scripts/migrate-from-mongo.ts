@@ -44,7 +44,7 @@ async function main(): Promise<void> {
   const counts = await seedFromPlan(store, buildSeedPlan(docs, now), now);
   console.log(`Seeded ${counts.baseCount} base + ${counts.expansionCount} expansion rows. Hydrating from BGG…`);
 
-  const refresh = new RefreshService(store, new BggAdapter(), logger);
+  const refresh = new RefreshService(store, new BggAdapter({ token: process.env.BGG_API_TOKEN }), logger);
   await refresh.startAll();
   while (refresh.isRunning) {
     const s = refresh.getStatus();

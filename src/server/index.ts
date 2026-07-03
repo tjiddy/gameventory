@@ -1,12 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 
-// Load .env from repo root if present. Production (Docker) doesn't ship one —
-// env comes from compose/Portainer — so silently skip when missing.
-try {
-  process.loadEnvFile('.env');
-} catch {
-  /* no .env file (expected in production) */
+// Load .env then .env.local (the latter overrides, holds local secrets like
+// BGG_API_TOKEN, and is gitignored). Production (Docker) ships neither — env comes
+// from compose/Portainer — so a missing file is silently skipped.
+for (const envFile of ['.env', '.env.local']) {
+  try {
+    process.loadEnvFile(envFile);
+  } catch {
+    /* file absent — expected in production */
+  }
 }
 
 import Fastify from 'fastify';

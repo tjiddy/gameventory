@@ -41,6 +41,10 @@ const envSchema = z.object({
   OIDC_AUTHELIA_REDIRECT_URI: z.string().optional(),
   // `authelia:<subject-uuid>` — the single admin allowed through the OIDC callback.
   BOOTSTRAP_ADMIN: z.string().optional(),
+  // BGG XML API bearer token (required since BGG's Oct-2025 auth lockdown). Register
+  // the app at https://boardgamegeek.com/using_the_xml_api to obtain one.
+  BGG_API_TOKEN: z.string().optional(),
+  BGG_API_TOKEN_FILE: z.string().optional(),
   // Weekly refresh cron (croner). Default: Mondays 04:00.
   REFRESH_CRON: z.string().default('0 4 * * 1').transform((v) => v || '0 4 * * 1'),
   LOG_LEVEL: z
@@ -79,6 +83,7 @@ export interface OidcConfig {
 
 const sessionSecret = resolveSecret(env.SESSION_SECRET, env.SESSION_SECRET_FILE);
 const oidcClientSecret = resolveSecret(env.OIDC_AUTHELIA_CLIENT_SECRET, env.OIDC_AUTHELIA_CLIENT_SECRET_FILE);
+const bggApiToken = resolveSecret(env.BGG_API_TOKEN, env.BGG_API_TOKEN_FILE);
 
 const oidc: OidcConfig | null =
   env.OIDC_AUTHELIA_ISSUER && env.OIDC_AUTHELIA_CLIENT_ID && oidcClientSecret && env.OIDC_AUTHELIA_REDIRECT_URI
@@ -103,6 +108,7 @@ export const config = {
   sessionSecret,
   oidc,
   bootstrapAdmin: env.BOOTSTRAP_ADMIN,
+  bggApiToken,
   refreshCron: env.REFRESH_CRON,
   logLevel: env.LOG_LEVEL,
   version: process.env.GIT_COMMIT || 'dev',

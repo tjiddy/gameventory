@@ -37,6 +37,8 @@ export interface BggAdapterOptions {
   backoffBaseMs?: number;
   /** Injectable for tests; defaults to the global fetch (undici, TLS on). */
   fetchFn?: typeof fetch;
+  /** BGG XML API bearer token — required by BGG since Oct 2025 (401 without it). */
+  token?: string | undefined;
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -57,6 +59,7 @@ export class BggAdapter implements BggPort {
   private readonly maxAttempts: number;
   private readonly backoffBaseMs: number;
   private readonly fetchFn: typeof fetch;
+  private readonly token: string | undefined;
 
   constructor(opts: BggAdapterOptions = {}) {
     this.queue = opts.queue ?? new BggRequestQueue();
@@ -64,10 +67,14 @@ export class BggAdapter implements BggPort {
     this.maxAttempts = opts.maxAttempts ?? 4;
     this.backoffBaseMs = opts.backoffBaseMs ?? 2000;
     this.fetchFn = opts.fetchFn ?? globalThis.fetch;
+    this.token = opts.token;
   }
 
   private async rawRequest(url: string, accept: string): Promise<{ status: number; text: string }> {
-    const res = await this.fetchFn(url, { headers: { accept } });
+    const headers: Record<string, string> = { accept };
+    // BGG requires a bearer token on the XML API since Oct 2025 (401 without it).
+    if (this.token) headers.authorization = `Bearer ${this.token}`;
+    const res = await this.fetchFn(url, { headers });
     const text = await res.text();
     return { status: res.status, text };
   }

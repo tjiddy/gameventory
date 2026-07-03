@@ -15,6 +15,7 @@ services:
       - /mnt/raid/servers/gameventory:/data
       - /mnt/raid/servers/gameventory/secrets/session_secret:/run/secrets/session_secret:ro
       - /mnt/raid/servers/gameventory/secrets/oidc_authelia_client_secret:/run/secrets/oidc_authelia_client_secret:ro
+      - /mnt/raid/servers/gameventory/secrets/bgg_api_token:/run/secrets/bgg_api_token:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       - NODE_ENV=production
@@ -28,6 +29,9 @@ services:
       # Staging value; swap to the www callback at flip (§14.4):
       - OIDC_AUTHELIA_REDIRECT_URI=https://games-beta.tjiddy.com/api/auth/oidc/authelia/callback
       - BOOTSTRAP_ADMIN=authelia:<todd-subject-uuid>
+      # BGG XML API bearer token (required since Oct 2025). Register at
+      # https://boardgamegeek.com/using_the_xml_api
+      - BGG_API_TOKEN_FILE=/run/secrets/bgg_api_token
       - REFRESH_CRON=0 4 * * 1
     restart: unless-stopped
 networks:

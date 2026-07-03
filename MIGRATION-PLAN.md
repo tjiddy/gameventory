@@ -122,7 +122,7 @@ Data: all base games loaded once per visit (`GET /api/games`); sorting/filtering
 - Clicking a row adds the game (`POST /api/games {bggId}`), then clears results and input, staying on `/add`. Show a success toast with the game name (modernization of the silent old behavior). Add failures surface as an error toast.
 
 ### 3.5 Navbar (`Navbar.js`) + refresh-all UX
-- Brand: dice icon + "GAMEVENTORY" in Luckiest Guy font → links to `/`. Nav links: Library, Add Game. Mobile: hamburger disclosure with the same links.
+- Brand: meeple icon + "GAMEVENTORY" in Luckiest Guy font → links to `/`. Nav links: Library, Add Game. Mobile: hamburger disclosure with the same links.
 - **Refresh-all trigger**: icon button (desktop) and a menu entry (mobile) → confirm dialog ("This will take a while") → `POST /api/refresh`.
 - **Progress UI**: replace the old blocking ProgressModal with a **non-blocking progress strip/toast** showing "Refreshing {currentGameName} ({current}/{total})" + percentage, driven by TanStack Query polling `GET /api/refresh/status` every 2s while state=running (also picks up cron-started runs on page load). Dismissible; reappears on nav while a job runs. On completion show a summary toast including failure count if > 0.
 - **Build SHA**: displayed in a small "about" popover from the navbar (old location was a dead profile menu — ledger N). Inject via Vite/tsup `define` of `GIT_COMMIT`.

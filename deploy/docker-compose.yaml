@@ -1,0 +1,35 @@
+# Reference deploy stack for gameventory (MIGRATION-PLAN §14).
+# Copy to homelab-stacks/stacks/misc/gameventory/docker-compose.yaml on leia.
+#
+# Caddy reaches the container by name over the shared external `downloaders`
+# network (matches the narratorr precedent). Rollback = revert the Caddyfile block;
+# the old static site + api (:3334) + mongo stay running until decommission (§14.6).
+services:
+  gameventory:
+    image: ghcr.io/tjiddy/gameventory:latest
+    container_name: gameventory
+    networks: [downloaders]
+    ports:
+      - "3041:3000" # optional LAN access; 3041 verified free (3040 is canary-crm). RE-VERIFY at deploy.
+    volumes:
+      - /mnt/raid/servers/gameventory:/data
+      - /mnt/raid/servers/gameventory/secrets/session_secret:/run/secrets/session_secret:ro
+      - /mnt/raid/servers/gameventory/secrets/oidc_authelia_client_secret:/run/secrets/oidc_authelia_client_secret:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - NODE_ENV=production
+      - TZ=America/Denver
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES}
+      - DATABASE_URL=file:/data/gameventory.db
+      - SESSION_SECRET_FILE=/run/secrets/session_secret
+      - OIDC_AUTHELIA_ISSUER=https://auth.tjiddy.com
+      - OIDC_AUTHELIA_CLIENT_ID=gameventory
+      - OIDC_AUTHELIA_CLIENT_SECRET_FILE=/run/secrets/oidc_authelia_client_secret
+      # Staging value; swap to the www callback at flip (§14.4):
+      - OIDC_AUTHELIA_REDIRECT_URI=https://games-beta.tjiddy.com/api/auth/oidc/authelia/callback
+      - BOOTSTRAP_ADMIN=authelia:<todd-subject-uuid>
+      - REFRESH_CRON=0 4 * * 1
+    restart: unless-stopped
+networks:
+  downloaders:
+    external: true

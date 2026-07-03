@@ -21,6 +21,7 @@
     "verify": "pnpm lint && pnpm test && pnpm typecheck && pnpm build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
+    "migrate:mongo": "tsx scripts/migrate-from-mongo.ts",
     "docker:build": "docker build -t gameventory ."
   },
   "dependencies": {

@@ -143,6 +143,11 @@ export class GameStore {
     return 'ok';
   }
 
+  /** Public base↔expansion link helper (used by the migration seeder). */
+  async linkExpansion(baseId: number, expansionId: number): Promise<void> {
+    await this.ensureJunction(baseId, expansionId);
+  }
+
   // ---- private helpers ----
 
   private async upsertStub(link: BggExpansionLink, now: Date): Promise<{ id: number; created: boolean }> {

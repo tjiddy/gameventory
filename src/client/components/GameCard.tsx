@@ -3,8 +3,7 @@ import type { GameSummary } from '../../shared/schemas/index.js';
 import type { TagFilter } from '../lib/library-filters';
 import { fmt2, fmtPlayers, decodeHtml } from '../lib/format';
 import { Tag } from './Tag';
-
-const MECHANISM_PREFIX = 'Mechanism: ';
+import { buildCardTags } from './card-tags';
 
 const ATTRIBUTES: { label: string; on: (g: GameSummary) => boolean }[] = [
   { label: 'Campaign', on: (g) => g.isCampaign },
@@ -12,22 +11,6 @@ const ATTRIBUTES: { label: string; on: (g: GameSummary) => boolean }[] = [
   { label: 'Cooperative', on: (g) => g.isCooperative },
   { label: '18XX', on: (g) => g.is18xx },
 ];
-
-function buildCardTags(game: GameSummary): { label: string; tag: TagFilter }[] {
-  const tags: { label: string; tag: TagFilter }[] = [];
-  const publisher = game.publishers[0];
-  if (publisher) tags.push({ label: publisher, tag: { type: 'Publisher', name: publisher } });
-  const designer = game.designers[0];
-  if (designer) tags.push({ label: designer, tag: { type: 'Designer', name: designer } });
-  for (const mechanic of game.mechanics) tags.push({ label: mechanic, tag: { type: 'Mechanic', name: mechanic } });
-  for (const family of game.families) {
-    // Filter on the FULL family string; display the label with the prefix stripped.
-    if (family.startsWith(MECHANISM_PREFIX)) {
-      tags.push({ label: family.slice(MECHANISM_PREFIX.length), tag: { type: 'Family', name: family } });
-    }
-  }
-  return tags;
-}
 
 interface GameCardProps {
   game: GameSummary;

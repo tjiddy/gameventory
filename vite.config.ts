@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 // The app lives at the domain root (no URL_BASE / subpath support — see
-// MIGRATION-PLAN §4). Fastify serves the built SPA out of dist/client.
+// §4). Fastify serves the built SPA out of dist/client.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   root: 'src/client',

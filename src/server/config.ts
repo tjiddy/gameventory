@@ -3,7 +3,7 @@ import path from 'path';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
-// Environment schema (MIGRATION-PLAN §4). Fail boot on invalid input.
+// Environment schema (§4). Fail boot on invalid input.
 //
 // Auth/OIDC fields are OPTIONAL here: Phase 0/1 run with AUTH_BYPASS=1 and no
 // Authelia configured. Phase 3 wiring calls assertOidcConfigured() when a real

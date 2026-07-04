@@ -1,6 +1,6 @@
 // Hand-crafted BGG XML fixtures modeled on real /thing, /search, and HTML-page
 // responses. Kept minimal but representative of the edge cases the adapter must
-// handle (MIGRATION-PLAN §12.3).
+// handle (§12.3).
 
 /** Catan (base, id 13): multi-designer, coop/legacy/campaign flags, 2 expansion links, rank 392. */
 export const CATAN_ITEM = `

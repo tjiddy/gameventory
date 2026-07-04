@@ -14,4 +14,4 @@ labels: automate
 
 ## Notes / constraints
 
-<!-- Reference MIGRATION-PLAN sections, files, or prior decisions. -->
+<!-- Reference SPEC.md sections, files, or prior decisions. -->

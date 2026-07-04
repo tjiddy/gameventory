@@ -1,6 +1,6 @@
 import type { GameSummary } from '../../shared/schemas/index.js';
 
-// The library's client-side filter + sort logic (MIGRATION-PLAN §3.1). This is
+// The library's client-side filter + sort logic (§3.1). This is
 // where feature parity lives; it is a pure module so §12 test 4 can pin every rule.
 
 export const SORT_OPTIONS = [

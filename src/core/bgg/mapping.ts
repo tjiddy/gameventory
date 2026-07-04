@@ -69,7 +69,7 @@ function mapLinks(links: RawLink[]): MappedLinks {
     .map((l) => ({ bggId: toInt(l.id), name: l.value ?? '' }))
     .filter((e): e is BggExpansionLink => e.bggId !== null && e.name !== '');
 
-  // Flag derivation (MIGRATION-PLAN §7.4) — case-insensitive substring matches.
+  // Flag derivation (§7.4) — case-insensitive substring matches.
   const has = (arr: string[], needle: string): boolean => arr.some((x) => x.toLowerCase().includes(needle));
   return {
     designers, publishers, artists, families, categories, mechanics, expansionLinks,

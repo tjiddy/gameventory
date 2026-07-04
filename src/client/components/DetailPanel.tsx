@@ -14,7 +14,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 const yesNo = (b: boolean): string => (b ? 'Yes' : 'No');
 const list = (arr: string[]): string => (arr.length ? arr.join(', ') : '—');
 
-/** The ordered details field list (MIGRATION-PLAN §3.3), used for base games and expansions. */
+/** The ordered details field list (§3.3), used for base games and expansions. */
 export function DetailPanel({ game }: { game: GameDetail }) {
   return (
     <dl className="w-full">

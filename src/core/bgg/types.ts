@@ -66,7 +66,7 @@ export interface BggPort {
 /**
  * Result of a batched getThings call. `missing` holds requested ids that BGG did
  * not return (dead ids, or a chunk-mate that failed to map) — per-id failures,
- * never a batch failure (MIGRATION-PLAN §7.3).
+ * never a batch failure (§7.3).
  */
 export interface BggThingsResult {
   things: BggThing[];

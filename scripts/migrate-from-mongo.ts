@@ -6,7 +6,7 @@ import { RefreshService } from '../src/server/services/refresh.service.js';
 import { BggAdapter } from '../src/core/bgg/index.js';
 import { coerceDocs, scanExport, buildSeedPlan, seedFromPlan } from '../src/server/migration/mongo-import.js';
 
-// In-process migration runner (MIGRATION-PLAN §11) — NOT through authed HTTP.
+// In-process migration runner (§11) — NOT through authed HTTP.
 //   EXPORT_FILE=games-export.json DATABASE_URL=file:/data/gameventory.db \
 //     tsx scripts/migrate-from-mongo.ts
 // Re-run against a fresh export at cutover. Do NOT trigger any old-app refresh

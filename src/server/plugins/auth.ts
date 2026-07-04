@@ -10,7 +10,7 @@ import './../types.js';
 export const SESSION_COOKIE = 'gv_session';
 
 /**
- * The auth policy (MIGRATION-PLAN §9): every non-GET /api call requires admin; GET
+ * The auth policy (§9): every non-GET /api call requires admin; GET
  * /api/bgg/search requires admin; every other GET and all non-/api paths are public.
  * `path` must already be query-stripped.
  */

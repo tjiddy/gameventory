@@ -1,4 +1,4 @@
-// Canonical promo detection (MIGRATION-PLAN ledger H). The old app had TWO
+// Canonical promo detection (ledger H). The old app had TWO
 // divergent regexes — one for filtering, a case-sensitive one for toggle
 // visibility. This is the single source of truth, tested against name AND
 // description, used by both the "hide promos" default and the toggle.

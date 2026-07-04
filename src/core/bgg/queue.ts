@@ -6,7 +6,7 @@ export const realSleep: SleepFn = (ms) => new Promise((resolve) => setTimeout(re
  * Serializes every BGG request through one chain and enforces a minimum spacing
  * between request starts (~2s). ALL BGG traffic — search, things, tagline scrape —
  * flows through a single instance so we never hammer the API in parallel
- * (MIGRATION-PLAN §7.1). Backoff on 202/429 is layered on top by the adapter.
+ * (§7.1). Backoff on 202/429 is layered on top by the adapter.
  *
  * `sleep` is injectable so tests run instantly (spacingMs=0 also skips the wait).
  */

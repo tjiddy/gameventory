@@ -3,7 +3,7 @@ import { sqliteTable, integer, text, real, primaryKey, unique } from 'drizzle-or
 // ---------------------------------------------------------------------------
 // games — one row per BGG "thing" (base game OR expansion). Self-referential via
 // the game_expansions junction. `bggId` is the global identity: one row per BGG
-// thing, ever. See MIGRATION-PLAN §5 for the type/upsert invariants.
+// thing, ever. See §5 for the type/upsert invariants.
 //
 // HARD RULE (§0.3): the refresh/hydration pipeline may only write the columns
 // tagged "BGG-derived" below. It must NEVER write owned/played/createTime or

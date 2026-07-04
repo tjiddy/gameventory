@@ -1,8 +1,8 @@
 import type { BggThing } from '../../core/bgg/index.js';
 
 /**
- * The EXACT set of columns the refresh/hydration pipeline may write (MIGRATION-PLAN
- * §5 enumeration + §0.3). `tagline` is BGG-derived but excluded here — it is written
+ * The EXACT set of columns the refresh/hydration pipeline may write (§5 enumeration
+ * + §0.3). `tagline` is BGG-derived but excluded here — it is written
  * only at add-time and single-game refresh, never by the cron. `type`, `owned`,
  * `played`, `createTime`, and `bggId` are NEVER in this set. The §12.1 write-set
  * test asserts buildBggDerivedUpdate produces exactly these keys.

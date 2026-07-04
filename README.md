@@ -2,13 +2,15 @@
 
 Board-game inventory app (BoardGameGeek-backed) — a single-repo, single-container
 rewrite of the legacy two-repo FastAPI + CRA stack, on the narratorr toolchain.
+**Live at www.tjiddy.com.**
 
 - **Stack:** pnpm / Node 24 (ESM), Fastify 5 + Zod 4, Drizzle + libSQL/SQLite,
   React 19 + Vite + TanStack Query + Tailwind v4. One Fastify process serves
   `/api/*` and the built SPA.
-- **Auth:** public read; admin writes via Authelia OIDC (default-deny). *(Phase 3.)*
-- **Plan of record:** [`MIGRATION-PLAN.md`](./MIGRATION-PLAN.md) — §0 is a hard
-  contract, §3 is the feature spec, §16 the phased acceptance criteria.
+- **Auth:** public read; admin writes via Authelia OIDC (default-deny).
+- **Spec:** [`SPEC.md`](./SPEC.md) — §0 is a hard contract, §2 the bug-ledger
+  rulings, §3 the feature spec, §17 what's out of scope. Deploy/ops:
+  [`deploy/README.md`](./deploy/README.md).
 
 ## Development
 

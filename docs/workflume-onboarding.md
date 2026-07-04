@@ -1,4 +1,4 @@
-# Workflume onboarding checklist (MIGRATION-PLAN §15)
+# Workflume onboarding checklist (complete — historical record)
 
 Prereqs are met once CI is green on `develop`. The repo-local artifacts below already
 exist; the remaining steps are **outward actions on GitHub and the workflume repo** —
@@ -6,7 +6,7 @@ do these when ready to hand the pipeline the wheel.
 
 ## Repo-local (done in this repo)
 - [x] `pnpm verify` script (hard workflume requirement)
-- [x] `CLAUDE.md` (repo conventions, points at MIGRATION-PLAN §0/§3)
+- [x] `CLAUDE.md` (repo conventions, points at SPEC.md §0/§3)
 - [x] `CONTRIBUTING.md`, `SECURITY.md`
 - [x] `.workflume/learnings.md` (empty)
 - [x] Issue + PR templates (`.github/`)

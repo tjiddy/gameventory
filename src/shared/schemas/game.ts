@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// API contract schemas (MIGRATION-PLAN §6). Timestamps serialize as epoch millis
+// API contract schemas (§6). Timestamps serialize as epoch millis
 // (numbers) — easiest for the client's date sorts. Metadata arrays are always
 // arrays in the DTO (the mapper coalesces a null column to []).
 

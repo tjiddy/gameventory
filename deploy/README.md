@@ -1,10 +1,10 @@
 # Deploy & cutover runbook
 
 Reference artifacts for deploying gameventory to the homelab and cutting over from
-the legacy stack. Source of truth: `../MIGRATION-PLAN.md` §14. Nothing here touches
+the legacy stack. Nothing here touches
 the live `homelab-stacks` repo automatically — copy these in when you're ready.
 
-## Prerequisites (external / host — MIGRATION-PLAN §18)
+## Prerequisites (external / host)
 
 1. **Authelia OIDC client** registered on leia (`/mnt/raid/servers/authelia/config`)
    with client id `gameventory` and **both** redirect URIs from day one:

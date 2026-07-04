@@ -23,4 +23,4 @@ is a required check on `develop`. E2E: `pnpm test:e2e` (Playwright, needs a buil
 - Match the surrounding code; respect the ESLint layer boundaries (see `CLAUDE.md`).
 - Server code logs caught errors as `log.error({ error: serializeError(e) }, msg)` (enforced).
 - No `Co-Authored-By` lines in commit messages.
-- Read `MIGRATION-PLAN.md` §0/§3 before adding or changing behavior.
+- Read `SPEC.md` §0/§3 before adding or changing behavior.

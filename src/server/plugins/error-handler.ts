@@ -3,7 +3,7 @@ import fp from 'fastify-plugin';
 import { serializeError } from '../utils/serialize-error.js';
 import { HttpError } from '../utils/http-error.js';
 
-// Response envelope for all error paths (MIGRATION-PLAN §6): { error: { message, code } }.
+// Response envelope for all error paths (§6): { error: { message, code } }.
 function sendError(reply: FastifyReply, status: number, code: string, message: string) {
   return reply.status(status).send({ error: { message, code } });
 }

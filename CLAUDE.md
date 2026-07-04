@@ -1,10 +1,13 @@
 # Gameventory — repo guide for agents
 
 Single-repo, single-container board-game inventory app (BoardGameGeek-backed) on the
-narratorr toolchain. **The plan of record is [`MIGRATION-PLAN.md`](./MIGRATION-PLAN.md)** —
-`§0` is a hard contract (the DO-NOT list), `§3` is the feature spec (derived from the
-legacy source; it overrides docs and instinct), `§16` is the phased acceptance criteria.
-When this file and the plan disagree, the plan wins.
+narratorr toolchain. **Live in production at www.tjiddy.com** (cut over from the legacy
+FastAPI/Mongo stack 2026-07-03). The behavior/scope spec is [`SPEC.md`](./SPEC.md) —
+`§0` is a hard contract (the DO-NOT list), `§2` is the bug-ledger rulings, `§3` is the
+feature spec (derived from the legacy source; it overrides docs and instinct), `§17` is
+what's out of scope. The **code** is the source of truth for implementation; SPEC.md for
+intended behavior. Deploy/ops + the pending legacy-decommission checklist live in
+[`deploy/README.md`](./deploy/README.md).
 
 ## Stack & layout
 - pnpm / Node 24 (ESM), Fastify 5 + fastify-type-provider-zod + Zod 4, Drizzle + libSQL/SQLite,
@@ -15,7 +18,7 @@ When this file and the plan disagree, the plan wins.
 - Layer boundaries are ESLint-enforced: client can't import server; shared can't import core/server;
   core can't import server/fastify; services/jobs can't import routes.
 
-## Ground rules (condensed from MIGRATION-PLAN §0)
+## Ground rules (condensed from SPEC §0)
 1. Do NOT add features beyond `§3` (no wishlist, plays, dark mode, SSE, i18n…).
 2. Do NOT normalize BGG metadata — designers/publishers/etc. are JSON string-array columns.
 3. The refresh/hydration path writes ONLY BGG-derived columns (`buildBggDerivedUpdate` /

@@ -8,7 +8,7 @@ export interface AuthUser {
   displayName: string;
 }
 
-/** The single-admin user store for the Authelia session (MIGRATION-PLAN §9). */
+/** The single-admin user store for the Authelia session (§9). */
 export class UserService {
   constructor(private readonly db: Db) {}
 

@@ -38,7 +38,7 @@ export class GameService {
   }
 
   /**
-   * Add a game by BGG id (MIGRATION-PLAN §5/§6). New id → insert owned=true. Existing
+   * Add a game by BGG id (§5/§6). New id → insert owned=true. Existing
    * expansion stub → promote (type from BGG, owned=true, played untouched). Existing
    * base → 409. Metadata + tagline are written, expansion stubs created, and their
    * background hydration scheduled.

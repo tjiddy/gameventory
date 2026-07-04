@@ -1,6 +1,6 @@
 import type { GameStore } from '../services/game-store.js';
 
-// Migration of prod Mongo → the new relational schema (MIGRATION-PLAN §11). Only
+// Migration of prod Mongo → the new relational schema (§11). Only
 // USER STATE is carried over (owned/played/createTime/tagline); all BGG metadata is
 // re-hydrated afterward, so chimera metadata damage (ledger B) washes out.
 

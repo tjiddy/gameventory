@@ -23,7 +23,7 @@
   --font-display: 'Luckiest Guy', system-ui, sans-serif;
 
   /* Custom library-grid breakpoints carried over from the old GameLibrary
-     (MIGRATION-PLAN §3.1): the column count steps at these exact widths. */
+     (§3.1): the column count steps at these exact widths. */
   --breakpoint-c2: 850px;
   --breakpoint-c3: 1330px;
   --breakpoint-c4: 1730px;

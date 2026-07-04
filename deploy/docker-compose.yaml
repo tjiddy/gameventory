@@ -1,4 +1,4 @@
-# Reference deploy stack for gameventory (MIGRATION-PLAN §14).
+# Reference deploy stack for gameventory (see deploy/README.md).
 # Copy to homelab-stacks/stacks/misc/gameventory/docker-compose.yaml on leia.
 #
 # Caddy reaches the container by name over the shared external `downloaders`

@@ -18,7 +18,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 /**
  * Owns the refresh/hydration machinery and the in-memory status served to the UI
- * (MIGRATION-PLAN §8). One full run at a time; single-game refresh 409s while a
+ * (§8). One full run at a time; single-game refresh 409s while a
  * full run is active. Only BGG-derived columns are written (via GameStore).
  */
 export class RefreshService {

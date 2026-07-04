@@ -48,7 +48,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 /**
- * The single gateway to BoardGameGeek (MIGRATION-PLAN §7). TLS verification is ON
+ * The single gateway to BoardGameGeek (§7). TLS verification is ON
  * (global fetch); nothing else in the app calls BGG directly. The adapter never
  * logs and never touches the DB — it returns data or throws typed errors.
  */
@@ -107,7 +107,7 @@ export class BggAdapter implements BggPort {
 
   /**
    * Batched /thing fetch (chunks of 20). NO `type` param — BGG silently omits
-   * non-matching ids when type is set (MIGRATION-PLAN §7.3); type is derived from
+   * non-matching ids when type is set (§7.3); type is derived from
    * each item. Requested ids absent from the response are per-id failures.
    */
   async getThings(bggIds: number[]): Promise<BggThingsResult> {
@@ -136,7 +136,7 @@ export class BggAdapter implements BggPort {
   /**
    * Scrape the game's HTML page for its tagline (BGG's XML API omits it). Fully
    * isolated: ANY failure returns null and never propagates to the caller
-   * (MIGRATION-PLAN §7.5). Called only from add-flow and single-game refresh.
+   * (§7.5). Called only from add-flow and single-game refresh.
    */
   async scrapeTagline(bggId: number): Promise<string | null> {
     try {

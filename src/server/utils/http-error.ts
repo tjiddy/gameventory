@@ -1,7 +1,7 @@
 /**
  * Typed HTTP error carrying an HTTP status + a machine-readable code. The error
  * handler (plugins/error-handler.ts) maps these to the `{ error: { message, code } }`
- * response envelope (MIGRATION-PLAN §6). Throw these from routes/services; never
+ * response envelope (§6). Throw these from routes/services; never
  * hand-roll `reply.status(...).send(...)` for error cases.
  */
 export class HttpError extends Error {

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -47,6 +48,12 @@ const envSchema = z.object({
   BGG_API_TOKEN_FILE: z.string().optional(),
   // Weekly refresh cron (croner). Default: Mondays 04:00.
   REFRESH_CRON: z.string().default('0 4 * * 1').transform((v) => v || '0 4 * * 1'),
+  // How many server-side backup files to retain (oldest pruned on create).
+  BACKUP_RETENTION: z
+    .string()
+    .default('20')
+    .transform((val) => parseInt(val, 10))
+    .pipe(z.number().int().min(1)),
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     .default('info'),
@@ -103,6 +110,11 @@ export const config = {
   // AUTH_BYPASS binds loopback-only so the bypassed admin is never reachable off-host.
   bindHost: env.AUTH_BYPASS ? '127.0.0.1' : '0.0.0.0',
   dbPath: env.DATABASE_URL,
+  // The durable data volume (holds the DB) — backups live in a sibling directory.
+  // dataDir = dirname(DATABASE_URL); default prod maps to /data, /data/backups.
+  dataDir: path.dirname(env.DATABASE_URL),
+  backupDir: path.join(path.dirname(env.DATABASE_URL), 'backups'),
+  backupRetention: env.BACKUP_RETENTION,
   authBypass: env.AUTH_BYPASS,
   trustedProxies: env.TRUSTED_PROXIES,
   sessionSecret,

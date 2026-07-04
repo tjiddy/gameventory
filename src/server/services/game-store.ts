@@ -1,8 +1,21 @@
 import { eq, and, asc, count } from 'drizzle-orm';
 import type { Db } from '../../db/index.js';
+import type { DbOrTx } from '../../db/client.js';
 import { games, gameExpansions, gameStatHistory, type GameRow, type NewGameRow } from '../../db/schema.js';
 import { buildBggDerivedUpdate } from './bgg-derived.js';
 import type { BggThing, BggExpansionLink, BggThingType } from '../../core/bgg/index.js';
+
+/** A stat-history row keyed on a resolved (reassigned) game id — the backup restore
+ * path maps `bggId → newId` before calling {@link GameStore.insertStatHistoryRaw}. */
+export interface RawStatSample {
+  gameId: number;
+  sampledDay: string;
+  rank: number | null;
+  ratingAvg: number | null;
+  ratingBavg: number | null;
+  weightAvg: number | null;
+  ratingVotes: number | null;
+}
 
 export interface RefreshRow {
   id: number;
@@ -48,10 +61,79 @@ export class GameStore {
       .all();
   }
 
+  // ---- full-library snapshot reads (backup export) ----
+  // These accept an optional tx so BackupService.create() can run all three inside
+  // ONE read db.transaction for a coherent snapshot against a concurrent refresh.
+
+  /** Every game row, verbatim (base and expansion). */
+  async listAllGames(tx?: DbOrTx): Promise<GameRow[]> {
+    return (tx ?? this.db).select().from(games).all();
+  }
+
+  /** Every base↔expansion junction, exported as portable `bggId` pairs. */
+  async listAllExpansionLinksByBgg(
+    tx?: DbOrTx,
+  ): Promise<{ baseBggId: number; expansionBggId: number }[]> {
+    const conn = tx ?? this.db;
+    const idToBgg = await this.idToBggMap(conn);
+    const rows = await conn.select().from(gameExpansions).all();
+    return rows.map((r) => ({
+      baseBggId: idToBgg.get(r.baseGameId)!,
+      expansionBggId: idToBgg.get(r.expansionGameId)!,
+    }));
+  }
+
+  /** Every stat-history sample, keyed on the portable `bggId`. */
+  async listAllStatHistoryByBgg(tx?: DbOrTx): Promise<
+    {
+      bggId: number;
+      sampledDay: string;
+      rank: number | null;
+      ratingAvg: number | null;
+      ratingBavg: number | null;
+      weightAvg: number | null;
+      ratingVotes: number | null;
+    }[]
+  > {
+    const conn = tx ?? this.db;
+    const idToBgg = await this.idToBggMap(conn);
+    const rows = await conn.select().from(gameStatHistory).all();
+    return rows.map((r) => ({
+      bggId: idToBgg.get(r.gameId)!,
+      sampledDay: r.sampledDay,
+      rank: r.rank,
+      ratingAvg: r.ratingAvg,
+      ratingBavg: r.ratingBavg,
+      weightAvg: r.weightAvg,
+      ratingVotes: r.ratingVotes,
+    }));
+  }
+
+  private async idToBggMap(conn: DbOrTx): Promise<Map<number, number>> {
+    const rows = await conn.select({ id: games.id, bggId: games.bggId }).from(games).all();
+    return new Map(rows.map((r) => [r.id, r.bggId]));
+  }
+
+  // ---- restore writes (used inside a single db.transaction) ----
+
+  /** Wipe every game row. FK cascades clear junctions + stat-history; `users`
+   * is a separate table and is untouched. */
+  async wipeAllGames(tx: DbOrTx): Promise<void> {
+    await tx.delete(games).run();
+  }
+
+  /** Raw stat-history insert for restore (the BGG-shaped {@link insertStatSample}
+   * is unusable here). Intra-file dedup only — the unique key is the reassigned
+   * `gameId`, so `onConflictDoNothing` drops duplicate (gameId, sampledDay) pairs
+   * without aborting the surrounding transaction. */
+  async insertStatHistoryRaw(sample: RawStatSample, tx?: DbOrTx): Promise<void> {
+    await (tx ?? this.db).insert(gameStatHistory).values(sample).onConflictDoNothing().run();
+  }
+
   // ---- user-state writes (add flow, PATCH) ----
 
-  async insertGame(values: NewGameRow): Promise<GameRow> {
-    return this.db.insert(games).values(values).returning().get();
+  async insertGame(values: NewGameRow, tx?: DbOrTx): Promise<GameRow> {
+    return (tx ?? this.db).insert(games).values(values).returning().get();
   }
 
   /** Add-flow promotion of an existing (stub) row: set its type + mark owned. */
@@ -143,9 +225,9 @@ export class GameStore {
     return 'ok';
   }
 
-  /** Public base↔expansion link helper (used by the migration seeder). */
-  async linkExpansion(baseId: number, expansionId: number): Promise<void> {
-    await this.ensureJunction(baseId, expansionId);
+  /** Public base↔expansion link helper (migration seeder + backup restore). */
+  async linkExpansion(baseId: number, expansionId: number, tx?: DbOrTx): Promise<void> {
+    await this.ensureJunction(baseId, expansionId, tx);
   }
 
   // ---- private helpers ----
@@ -171,8 +253,8 @@ export class GameStore {
     return { id: existing!.id, created: false };
   }
 
-  private async ensureJunction(baseId: number, expId: number): Promise<void> {
-    await this.db
+  private async ensureJunction(baseId: number, expId: number, tx?: DbOrTx): Promise<void> {
+    await (tx ?? this.db)
       .insert(gameExpansions)
       .values({ baseGameId: baseId, expansionGameId: expId })
       .onConflictDoNothing()

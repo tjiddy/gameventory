@@ -68,6 +68,36 @@ Expect expansion `owned` flags ≈ all-false (ledger E) — budget one evening t
    archive both old GitHub repos; remove `/sites/tjiddy` static + the old deploy key +
    the games-beta block; update `port-map.html` (3334 freed, 3041 claimed).
 
+## Backup & Restore — prod schema-break runbook (admin backup)
+
+Backups are **logical JSON** exports (authoritative user state + BGG cache + expansion
+links + stat-history), written to `/data/backups/` on the same durable volume as the
+DB. They survive container recreation but **not** volume/disk loss — for an off-box
+copy, use per-file **Download** in the admin UI. Retention defaults to
+`BACKUP_RETENTION=20` (oldest pruned on create).
+
+Migrations run at boot **before** serving, so a broken schema won't boot and there is
+no UI to restore into. Handle a schema change by type:
+
+- **Additive / migration-connected change** → no restore needed; migrations carry the
+  data forward.
+- **Breaking / fresh-lineage change** →
+  1. In the admin UI (**Admin → Backup & Restore**), click **Create Backup**. The JSON
+     lands in `/data/backups/` (a separate file from the DB).
+  2. Delete **only** `/data/gameventory.db` — the backups survive (separate files):
+     ```bash
+     docker exec gameventory rm -f /data/gameventory.db
+     ```
+  3. Restart the container. Migrations build a fresh, empty schema at boot.
+  4. Re-login (the OIDC bootstrap gate re-provisions the admin `users` row).
+  5. **Admin → Backup & Restore → Restore** from the surviving server backup. Restore
+     re-maps on `bggId` and re-derives the cache, so it tolerates the new schema.
+  6. Optionally click **⟳ Refresh All** to re-pull fresh BGG metadata.
+
+Restore takes an automatic **pre-restore safety backup** first, so a mistaken restore
+is itself undoable. It runs in a single transaction — a mid-restore failure rolls back
+and leaves the prior library intact.
+
 ## Image
 
 CI publishes `ghcr.io/tjiddy/gameventory:develop` (on develop push) and

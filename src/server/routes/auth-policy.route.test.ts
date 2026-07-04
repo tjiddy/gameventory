@@ -12,6 +12,11 @@ describe('requiresAdmin policy predicate (§9)', () => {
     expect(requiresAdmin('DELETE', '/api/games/13')).toBe(true);
     expect(requiresAdmin('POST', '/api/refresh')).toBe(true);
     expect(requiresAdmin('GET', '/api/bgg/search')).toBe(true);
+    // Every /api/admin/* route is admin-only — GET included (the admin branch
+    // precedes the public-GET branch).
+    expect(requiresAdmin('GET', '/api/admin/backups')).toBe(true);
+    expect(requiresAdmin('POST', '/api/admin/backups')).toBe(true);
+    expect(requiresAdmin('DELETE', '/api/admin/backups/gameventory-backup-x.json')).toBe(true);
     expect(requiresAdmin('GET', '/api/games')).toBe(false);
     expect(requiresAdmin('GET', '/api/games/13')).toBe(false);
     expect(requiresAdmin('GET', '/api/health')).toBe(false);
@@ -34,6 +39,9 @@ describe('default-deny auth hook against real routes (§12.2)', () => {
         { method: 'POST' as const, url: '/api/games/13/refresh' },
         { method: 'POST' as const, url: '/api/refresh' },
         { method: 'GET' as const, url: '/api/bgg/search?q=catan' },
+        { method: 'GET' as const, url: '/api/admin/backups' },
+        { method: 'POST' as const, url: '/api/admin/backups' },
+        { method: 'DELETE' as const, url: '/api/admin/backups/gameventory-backup-x.json' },
       ];
       for (const req of denied) {
         const res = await app.inject(req);

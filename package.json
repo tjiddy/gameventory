@@ -22,6 +22,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "migrate:mongo": "tsx scripts/migrate-from-mongo.ts",
+    "backup": "tsx scripts/backup.ts",
+    "restore": "tsx scripts/restore.ts",
     "docker:build": "docker build -t gameventory ."
   },
   "dependencies": {

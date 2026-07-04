@@ -14,7 +14,12 @@ import type { BggPort, BggThingsResult } from '../../core/bgg/index.js';
 import type { NewGameRow } from '../../db/schema.js';
 
 const tempDirs: string[] = [];
+const cleanups: Array<() => Promise<void>> = [];
 afterEach(async () => {
+  while (cleanups.length) {
+    const c = cleanups.pop();
+    if (c) await c();
+  }
   while (tempDirs.length) {
     const d = tempDirs.pop();
     if (d) await fs.rm(d, { recursive: true, force: true });
@@ -56,8 +61,8 @@ interface Services {
 }
 
 async function makeServices(bgg?: BggPort): Promise<Services> {
-  const { db, dir: dbDir } = await makeTestDbFile();
-  tempDirs.push(dbDir);
+  const { db, cleanup } = await makeTestDbFile();
+  cleanups.push(cleanup);
   const backupDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gv-conc-'));
   tempDirs.push(backupDir);
   const store = new GameStore(db);

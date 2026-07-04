@@ -12,7 +12,12 @@ import { OperationLock } from '../services/operation-lock.js';
 import type { NewGameRow } from '../../db/schema.js';
 
 const tempDirs: string[] = [];
+const cleanups: Array<() => Promise<void>> = [];
 afterEach(async () => {
+  while (cleanups.length) {
+    const c = cleanups.pop();
+    if (c) await c();
+  }
   while (tempDirs.length) {
     const d = tempDirs.pop();
     if (d) await fs.rm(d, { recursive: true, force: true });
@@ -31,8 +36,8 @@ interface Ctx {
 
 /** Build a test app whose backups service writes to a temp dir. */
 async function adminCtx(opts: { anonymous?: boolean } = {}): Promise<Ctx> {
-  const { db, dir: dbDir } = await makeTestDbFile();
-  tempDirs.push(dbDir);
+  const { db, cleanup } = await makeTestDbFile();
+  cleanups.push(cleanup);
   const backupDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gv-adminroute-'));
   tempDirs.push(backupDir);
   const services = createServices(db, silentLogger, makeFakeBgg());

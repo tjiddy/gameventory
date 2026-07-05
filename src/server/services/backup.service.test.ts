@@ -228,6 +228,38 @@ describe('BackupService.restore — atomicity + safety backup', () => {
     expect(await store.getByBggId(99)).toBeUndefined();
   });
 
+  it('skips dangling expansion links and stat samples, restoring only resolvable rows', async () => {
+    const { store, backups } = await makeHarness();
+    // A valid backup: one resolvable base game, plus a link and a stat sample whose
+    // bggIds are absent from `games` (dangling references a real export can carry).
+    const dto = BackupFile.parse({
+      format: 'gameventory-backup',
+      version: 1,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      counts: { games: 1, baseGames: 1, expansionLinks: 1, statHistory: 1 },
+      games: [
+        BackupGame.parse({
+          bggId: 13, type: 'base', owned: true, played: false,
+          createTime: '2024-01-01T00:00:00.000Z', name: 'Catan', updateTime: '2024-01-01T00:00:00.000Z',
+        }),
+      ],
+      expansionLinks: [{ baseBggId: 13, expansionBggId: 926 }], // 926 not in games
+      statHistory: [
+        { bggId: 555, sampledDay: '2026-07-03', rank: 1, ratingAvg: 7, ratingBavg: 6, weightAvg: 2, ratingVotes: 5 }, // 555 not in games
+      ],
+    });
+
+    const result = await backups.restore(dto);
+
+    // The restore succeeds and the resolvable game is present.
+    expect(await store.getByBggId(13)).toBeDefined();
+    // Dangling rows were skipped, not counted.
+    expect(result.restored).toMatchObject({ games: 1, expansionLinks: 0, statHistory: 0 });
+    // Both skips surface as warnings (backup.service.ts:270, :280).
+    expect(result.warnings).toContain('Skipped dangling expansion link 13 → 926');
+    expect(result.warnings).toContain('Skipped dangling stat sample for bggId 555');
+  });
+
   it('restores duplicate (bggId, sampledDay) stat samples via onConflictDoNothing', async () => {
     const { store, dir, backups } = await makeHarness();
     await store.insertGame(newRow({ bggId: 13, type: 'base' }));

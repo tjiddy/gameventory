@@ -57,4 +57,16 @@ describe('makeResolveUser session resolution', () => {
     expect(await resolve(asReq({ [SESSION_COOKIE]: 'tampered.token' }))).toBeNull();
     expect(await resolve(asReq({}))).toBeNull();
   });
+
+  it('returns null when the token is valid but the user row is gone (deleted user)', async () => {
+    const db = await makeTestDb();
+    const users = new UserService(db);
+    const secret = 'sess-secret';
+    const resolve = makeResolveUser({ config, users, sessionSecret: secret });
+    const asReq = (cookies: Record<string, string>): FastifyRequest => ({ cookies }) as unknown as FastifyRequest;
+
+    // Mint a valid token for an id with no backing row (getById → undefined).
+    const orphan = createSessionToken({ uid: 999_999, sub: 'ghost' }, secret);
+    expect(await resolve(asReq({ [SESSION_COOKIE]: orphan }))).toBeNull();
+  });
 });

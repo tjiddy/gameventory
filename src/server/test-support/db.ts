@@ -24,8 +24,16 @@ const TEMP_DB_PREFIX = 'gv-testdb-';
  * under Windows (verified: `close()` + 3s of retries never frees it), and
  * Windows refuses to unlink an open file — so a run cannot delete its own temp
  * DBs while it still holds them. Once that process exits the OS frees the
- * handles, so the NEXT run's sweep reclaims them. On POSIX/CI, open files
- * unlink fine and nothing leaks, making this a harmless no-op.
+ * handles, so the NEXT run's sweep reclaims them.
+ *
+ * WINDOWS-ONLY, deliberately. On POSIX this sweep is unnecessary AND unsafe:
+ * `cleanup()` already unlinks each dir in teardown (open files unlink fine),
+ * so nothing leaks — while Vitest runs test files across concurrent workers
+ * that each import this module and would fire the sweep at the SAME time. On
+ * POSIX the OS happily deletes a dir another live worker is mid-transaction on,
+ * pulling the db/-wal/-shm out from under it → `SQLITE_READONLY_DBMOVED` /
+ * `SQLITE_IOERR`. On Windows that race is self-limiting: the OS refuses to
+ * unlink a held file, so `rmSync` throws and the sibling's live DB is skipped.
  */
 function sweepStaleTempDbs(): void {
   let entries: string[];
@@ -43,7 +51,18 @@ function sweepStaleTempDbs(): void {
     }
   }
 }
-sweepStaleTempDbs();
+
+/**
+ * The Windows-only gate for the import-time sweep, extracted with an injectable
+ * `platform` so both branches are unit-testable (removing the gate would silently
+ * reintroduce the POSIX concurrent-worker race). The default reads the real host
+ * platform, so the production import-time call below is unchanged. See
+ * `sweepStaleTempDbs` for why POSIX must skip the sweep.
+ */
+export function sweepStaleTempDbsIfSupported(platform: NodeJS.Platform = process.platform): void {
+  if (platform === 'win32') sweepStaleTempDbs();
+}
+sweepStaleTempDbsIfSupported();
 
 /**
  * A fresh FILE-backed libSQL database in a temp dir, with migrations applied.

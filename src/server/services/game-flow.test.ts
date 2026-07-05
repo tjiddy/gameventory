@@ -108,4 +108,40 @@ describe('add flow (§5/§6)', () => {
     await awaitHydration();
     await expect(games.deleteGame(926)).rejects.toMatchObject({ statusCode: 409 });
   });
+
+  it('promoting an already-played expansion stub keeps played=true and sets owned=true', async () => {
+    const { store, games, awaitHydration } = await harness({
+      13: makeThing({ bggId: 13, type: 'base', expansionLinks: [{ bggId: 926, name: 'Seafarers' }] }),
+      926: makeThing({ bggId: 926, type: 'expansion' }),
+    });
+    await games.addGame(13);
+    await awaitHydration();
+    // Mark the (owned=false) stub as played before it is explicitly owned.
+    await store.updateUserState(926, { played: true });
+
+    await games.addGame(926); // promote the expansion to owned
+
+    const exp = await store.getByBggId(926);
+    expect(exp?.played).toBe(true); // promoteToAdded sets only type + owned, never played
+    expect(exp?.owned).toBe(true);
+    expect(exp?.type).toBe('expansion');
+  });
+});
+
+describe('game.service unknown-id errors (§6)', () => {
+  it('404s patchGame on an unknown bggId', async () => {
+    const { games } = await harness({});
+    await expect(games.patchGame(99999, { played: true })).rejects.toMatchObject({
+      statusCode: 404,
+      code: 'NOT_FOUND',
+    });
+  });
+
+  it('404s deleteGame on an unknown bggId', async () => {
+    const { games } = await harness({});
+    await expect(games.deleteGame(99999)).rejects.toMatchObject({
+      statusCode: 404,
+      code: 'NOT_FOUND',
+    });
+  });
 });

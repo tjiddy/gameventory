@@ -97,4 +97,17 @@ describe('seed into the DB (§11.3)', () => {
     // 999 stayed a base game, never converted to an expansion of 555.
     expect((await store.getByBggId(999))?.type).toBe('base');
   });
+
+  it('persists plan defaults (owned=true, played=false) for a base doc omitting both', async () => {
+    const db = await makeTestDb();
+    const store = new GameStore(db);
+    const now = new Date();
+    // A base doc with no owned/played → buildSeedPlan defaults owned=true, played=false;
+    // seedFromPlan must carry those onto the persisted row.
+    await seedFromPlan(store, buildSeedPlan(coerceDocs([{ bgg_id: 42, name: 'Defaults' }]), now), now);
+
+    const row = await store.getByBggId(42);
+    expect(row?.owned).toBe(true);
+    expect(row?.played).toBe(false);
+  });
 });

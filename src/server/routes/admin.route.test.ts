@@ -136,6 +136,42 @@ describe('admin backup routes — lifecycle (admin session)', () => {
     }
   });
 
+  it('accepts a >1MB (but <20MB) upload — pins the 20MB body limit, not Fastify default 1MB', async () => {
+    const { app } = await adminCtx();
+    try {
+      // Pad via array length so the payload stays schema-valid for BackupFile while
+      // exceeding Fastify's 1MB default bodyLimit. A regression to that default would
+      // surface as 413 (payload too large), not a validation error.
+      const pad = 'x'.repeat(2000);
+      const games = Array.from({ length: 600 }, (_, i) => ({
+        bggId: 100000 + i,
+        type: 'base' as const,
+        owned: true,
+        played: false,
+        createTime: '2024-01-01T00:00:00.000Z',
+        name: `Padded ${i} ${pad}`,
+        updateTime: '2024-01-01T00:00:00.000Z',
+      }));
+      const dto = {
+        format: 'gameventory-backup',
+        version: 1,
+        createdAt: 'x',
+        counts: { games: games.length, baseGames: games.length, expansionLinks: 0, statHistory: 0 },
+        games,
+        expansionLinks: [],
+        statHistory: [],
+      };
+      expect(Buffer.byteLength(JSON.stringify(dto))).toBeGreaterThan(1024 * 1024);
+
+      const res = await app.inject({ method: 'POST', url: '/api/admin/backups/restore-upload', payload: dto });
+      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).not.toBe(413);
+      expect(res.json().restored.games).toBe(games.length);
+    } finally {
+      await app.close();
+    }
+  });
+
   it('rejects an uploaded backup with a newer/unknown version (400)', async () => {
     const { app } = await adminCtx();
     try {

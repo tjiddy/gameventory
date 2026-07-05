@@ -51,7 +51,18 @@ function sweepStaleTempDbs(): void {
     }
   }
 }
-if (process.platform === 'win32') sweepStaleTempDbs();
+
+/**
+ * The Windows-only gate for the import-time sweep, extracted with an injectable
+ * `platform` so both branches are unit-testable (removing the gate would silently
+ * reintroduce the POSIX concurrent-worker race). The default reads the real host
+ * platform, so the production import-time call below is unchanged. See
+ * `sweepStaleTempDbs` for why POSIX must skip the sweep.
+ */
+export function sweepStaleTempDbsIfSupported(platform: NodeJS.Platform = process.platform): void {
+  if (platform === 'win32') sweepStaleTempDbs();
+}
+sweepStaleTempDbsIfSupported();
 
 /**
  * A fresh FILE-backed libSQL database in a temp dir, with migrations applied.

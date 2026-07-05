@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { makeTestDb } from '../test-support/db.js';
 import { makeThing, makeFakeBgg, silentLogger, TEST_ADMIN } from '../test-support/fakes.js';
 import { buildTestApp } from '../test-support/app.js';
@@ -53,6 +53,31 @@ describe('games routes (admin session)', () => {
       await app.inject({ method: 'POST', url: '/api/games', payload: { bggId: 13 } });
       const dup = await app.inject({ method: 'POST', url: '/api/games', payload: { bggId: 13 } });
       expect(dup.statusCode).toBe(409);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it('POST /api/games/:bggId/refresh → 200 with detail reflecting the refresh', async () => {
+    const db = await makeTestDb();
+    // A mutable tagline: the add scrapes 'tag-before', then we flip it so the
+    // refresh's scrape writes 'tag-after'. The 200 body carrying 'tag-after'
+    // proves runSingle ran AND getDetail re-fetched *after* it, in that order.
+    const bggOpts = { things: { 13: makeThing({ bggId: 13, name: 'Catan', type: 'base' }) }, tagline: 'tag-before' };
+    const services = createServices(db, silentLogger, makeFakeBgg(bggOpts));
+    const runSingleSpy = vi.spyOn(services.refresh, 'runSingle');
+    const app = await buildTestApp(services, db, { user: TEST_ADMIN });
+    try {
+      const add = await app.inject({ method: 'POST', url: '/api/games', payload: { bggId: 13 } });
+      expect(add.statusCode).toBe(201);
+      expect(add.json().tagline).toBe('tag-before');
+
+      bggOpts.tagline = 'tag-after';
+      const res = await app.inject({ method: 'POST', url: '/api/games/13/refresh' });
+      expect(res.statusCode).toBe(200);
+      expect(runSingleSpy).toHaveBeenCalledWith(13);
+      expect(res.json().bggId).toBe(13);
+      expect(res.json().tagline).toBe('tag-after');
     } finally {
       await app.close();
     }

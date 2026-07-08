@@ -17,7 +17,7 @@ function ResultRow({ r, onAdd }: { r: BggSearchResultDto; onAdd: (r: BggSearchRe
       }`}
     >
       <div
-        className="h-16 w-16 shrink-0 rounded bg-gray-700 bg-cover bg-center"
+        className="h-16 w-16 shrink-0 rounded bg-gray-700 bg-cover bg-top"
         style={r.image ? { backgroundImage: `url("${r.image}")` } : undefined}
       />
       <div className="min-w-0 flex-1">

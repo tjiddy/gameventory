@@ -145,6 +145,18 @@ describe('DetailsPage admin-actions gate', () => {
   });
 });
 
+describe('DetailsPage hero cover crop anchor', () => {
+  it('anchors the hero cover crop to the top (bg-top, not bg-center)', async () => {
+    const { container } = renderDetails([game({ image: 'https://example.com/cover.png' })], null);
+    await screen.findByRole('heading', { name: /catan/i });
+
+    const hero = container.querySelector('div.h-\\[300px\\]');
+    expect(hero).not.toBeNull();
+    expect(hero!.className).toContain('bg-top');
+    expect(hero!.className).not.toContain('bg-center');
+  });
+});
+
 describe('DetailsPage expansion view reset', () => {
   it('resets the in-page view when the SAME mounted instance sees a new base game', async () => {
     const exp = expansion({ bggId: 99, name: 'Seafarers' });

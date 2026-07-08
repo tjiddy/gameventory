@@ -117,7 +117,7 @@ export function DetailsPage() {
 
       <div className="grid gap-6 md:grid-cols-[300px_1fr]">
         <div
-          className="relative h-[300px] rounded-lg bg-gray-700 bg-cover bg-center"
+          className="relative h-[300px] rounded-lg bg-gray-700 bg-cover bg-top"
           style={game.image ? { backgroundImage: `url("${game.image}")` } : undefined}
         >
           {game.played && <span className="absolute right-2 top-2 rounded-full bg-green-600 px-2 py-0.5 text-xs">✓ Played</span>}

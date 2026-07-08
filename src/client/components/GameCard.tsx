@@ -24,7 +24,7 @@ export function GameCard({ game, index, onTagClick }: GameCardProps) {
     <div className="flex flex-col overflow-hidden rounded-lg bg-gray-800 shadow">
       <Link
         to={`/details/${game.bggId}`}
-        className="relative block h-[250px] bg-gray-700 bg-cover bg-center"
+        className="relative block h-[250px] bg-gray-700 bg-cover bg-top"
         style={game.image ? { backgroundImage: `url("${game.image}")` } : undefined}
       >
         <div className="absolute left-2 top-2 flex flex-wrap gap-1">

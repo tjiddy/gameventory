@@ -11,7 +11,7 @@ function ExpansionRow({ exp, onOpen }: { exp: ExpansionSummary; onOpen: (bggId: 
       className="flex w-full gap-3 rounded-lg bg-gray-800 p-3 text-left hover:bg-gray-700"
     >
       <div
-        className={`h-[200px] w-[150px] shrink-0 rounded bg-gray-700 bg-cover bg-center ${exp.owned ? '' : 'grayscale'}`}
+        className={`h-[200px] w-[150px] shrink-0 rounded bg-gray-700 bg-cover bg-top ${exp.owned ? '' : 'grayscale'}`}
         style={exp.image ? { backgroundImage: `url("${exp.image}")` } : undefined}
       />
       <div className="min-w-0 flex-1">

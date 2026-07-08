@@ -89,6 +89,32 @@ describe('AddPage adding a result', () => {
     expect(screen.queryByRole('button', { name: /catan/i })).toBeNull();
   });
 
+  it('anchors the result thumbnail crop to the top (bg-top, not bg-center) and keeps grayscale on in-library rows', async () => {
+    vi.spyOn(api, 'search').mockResolvedValue([
+      result({ bggId: 1, name: 'Catan', image: 'https://example.com/catan.png', inLibrary: false }),
+      result({ bggId: 2, name: 'Carcassonne', image: 'https://example.com/carc.png', inLibrary: true }),
+    ]);
+    const user = userEvent.setup();
+    const { container } = renderAddPage();
+
+    await user.type(screen.getByRole('textbox'), 'catan');
+    await user.click(screen.getByRole('button', { name: /search/i }));
+
+    await screen.findByText('Catan');
+    const thumbs = container.querySelectorAll('div.bg-cover');
+    expect(thumbs.length).toBe(2);
+    for (const thumb of thumbs) {
+      expect(thumb.className).toContain('bg-top');
+      expect(thumb.className).not.toContain('bg-center');
+    }
+
+    // The in-library row (Carcassonne) still carries grayscale on its row control.
+    const inLibraryRow = screen.getByRole('button', { name: /carcassonne/i });
+    expect(inLibraryRow.className).toContain('grayscale');
+    const availableRow = screen.getByRole('button', { name: /^catan/i });
+    expect(availableRow.className).not.toContain('grayscale');
+  });
+
   it('renders an in-library result as a disabled control that cannot be added', async () => {
     vi.spyOn(api, 'search').mockResolvedValue([result({ bggId: 42, name: 'Catan', inLibrary: true })]);
     const addSpy = vi.spyOn(api, 'addGame').mockResolvedValue({} as never);

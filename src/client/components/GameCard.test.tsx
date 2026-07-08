@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { cleanup, render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { afterEach, describe, it, expect } from 'vitest';
 import { buildCardTags } from './card-tags';
+import { GameCard } from './GameCard';
 import type { GameSummary } from '../../shared/schemas/index.js';
+
+afterEach(cleanup);
 
 function game(over: Partial<GameSummary>): GameSummary {
   return {
@@ -30,5 +35,30 @@ describe('buildCardTags', () => {
     expect(buildCardTags(game({ families: ['Mechanism: Deck Building', 'Theme: Space'] }))).toEqual([
       { label: 'Deck Building', tag: { type: 'Family', name: 'Mechanism: Deck Building' } },
     ]);
+  });
+});
+
+function renderCard(g: GameSummary) {
+  return render(
+    <MemoryRouter>
+      <GameCard game={g} index={0} onTagClick={() => {}} />
+    </MemoryRouter>,
+  );
+}
+
+describe('GameCard cover crop anchor', () => {
+  it('anchors the cover crop to the top (bg-top, not bg-center) when an image is present', () => {
+    const { container } = renderCard(game({ image: 'https://example.com/cover.png' }));
+    const cover = container.querySelector('a.bg-cover');
+    expect(cover).not.toBeNull();
+    expect(cover!.className).toContain('bg-top');
+    expect(cover!.className).not.toContain('bg-center');
+  });
+
+  it('keeps the plain gray placeholder with no inline background-image when image is null', () => {
+    const { container } = renderCard(game({ image: null }));
+    const cover = container.querySelector('a.bg-cover') as HTMLElement;
+    expect(cover.className).toContain('bg-gray-700');
+    expect(cover.style.backgroundImage).toBe('');
   });
 });
